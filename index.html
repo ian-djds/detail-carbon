@@ -113,6 +113,16 @@
       transition: border-color 0.15s ease;
     }
     .layer select { cursor: pointer; }
+    /* material cell: category color dot + dropdown */
+    .mat-cell { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+    .mat-cell select { flex: 1; min-width: 0; }
+    .mat-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.25);
+    }
     /* dropdown list items: dark text on light bg so the open menu is readable */
     .layer select option,
     .layer select optgroup {
@@ -468,7 +478,7 @@
       }
       .col-labels { display: none; }
       .layer { gap: 0.45rem; }
-      .layer select { grid-column: 1 / -1; }
+      .layer .mat-cell { grid-column: 1 / -1; }
       .layer .layer-carbon { grid-column: 1 / 3; text-align: left; }
       .layer .remove { grid-column: 3; justify-self: end; }
       .cat-row { grid-template-columns: 96px 1fr 78px; gap: 0.5rem; }
@@ -614,12 +624,14 @@
       { id:"woodfibre",name:"Wood fibre board",            cat:"Insulation", unit:"kg", factor:0.500, density:50,  source:"ICE v3 (indicative, excl. biogenic)" },
       { id:"cork",    name:"Cork board (expanded)",        cat:"Insulation", unit:"kg", factor:0.450, density:110, source:"Indicative (excl. biogenic)" },
       { id:"sheepwool",name:"Sheep's wool",                cat:"Insulation", unit:"kg", factor:0.900, density:25,  source:"Indicative" },
-      // Cladding & finishes
-      { id:"gypsum",  name:"Gypsum plasterboard",          cat:"Cladding & finishes", unit:"kg", factor:0.390, density:700,  source:"ICE v3 (indicative)" },
-      { id:"render",  name:"Cement render / screed",       cat:"Cladding & finishes", unit:"kg", factor:0.160, density:1800, source:"ICE v3 (indicative)" },
-      { id:"ceramic", name:"Ceramic tile",                 cat:"Cladding & finishes", unit:"kg", factor:0.780, density:2000, source:"ICE v3 (indicative)" },
-      { id:"fibrecement",name:"Fibre cement board",        cat:"Cladding & finishes", unit:"kg", factor:1.050, density:1400, source:"ICE v3 (indicative)" },
-      { id:"terracotta",name:"Terracotta cladding",        cat:"Cladding & finishes", unit:"kg", factor:0.520, density:1900, source:"Indicative" },
+      // Cladding
+      { id:"render",  name:"Cement render",                cat:"Cladding", unit:"kg", factor:0.160, density:1800, source:"ICE v3 (indicative)" },
+      { id:"fibrecement",name:"Fibre cement board",        cat:"Cladding", unit:"kg", factor:1.050, density:1400, source:"ICE v3 (indicative)" },
+      { id:"terracotta",name:"Terracotta cladding",        cat:"Cladding", unit:"kg", factor:0.520, density:1900, source:"Indicative" },
+      // Interior finishes
+      { id:"gypsum",  name:"Gypsum plasterboard",          cat:"Interior finishes", unit:"kg", factor:0.390, density:700,  source:"ICE v3 (indicative)" },
+      { id:"ceramic", name:"Ceramic tile",                 cat:"Interior finishes", unit:"kg", factor:0.780, density:2000, source:"ICE v3 (indicative)" },
+      { id:"screed",  name:"Cement screed (floor)",        cat:"Interior finishes", unit:"kg", factor:0.160, density:1800, source:"ICE v3 (indicative)" },
       // Glazing
       { id:"glass",     name:"Float glass (pane)",         cat:"Glazing", unit:"kg", factor:1.440, density:2500, source:"ICE v3 (indicative)" },
       { id:"igu_double",name:"Double-glazed unit (IGU)",   cat:"Glazing", unit:"m2", factor:30.0, source:"Indicative (per m²)" },
@@ -643,7 +655,8 @@
     const CAT_COLORS = {
       "Structure & masonry": "#6aa9e9",
       "Insulation": "#e9c46a",
-      "Cladding & finishes": "#e88c7d",
+      "Cladding": "#e88c7d",
+      "Interior finishes": "#e0a0c8",
       "Glazing": "#5fc8c1",
       "Doors": "#9fcf6a",
       "Membranes & misc": "#b58ce9"
@@ -797,7 +810,16 @@
         src.innerHTML = '<span class="src-i">ⓘ</span> factor in kgCO₂e/' + ulabel +
           ' · source: ' + mat.source;
 
-        row.append(sel, thick, fac, carbon, rm, src);
+        // material cell: category color dot + dropdown
+        const matCell = document.createElement("div");
+        matCell.className = "mat-cell";
+        const dot = document.createElement("span");
+        dot.className = "mat-dot";
+        dot.style.background = CAT_COLORS[mat.cat] || "#7dd3a0";
+        dot.title = catLabel(mat.cat);
+        matCell.append(dot, sel);
+
+        row.append(matCell, thick, fac, carbon, rm, src);
         container.appendChild(row);
       });
 
