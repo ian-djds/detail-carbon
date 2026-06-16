@@ -441,6 +441,8 @@
     .equiv-icon { font-size: 1.7rem; line-height: 1; flex-shrink: 0; }
     .equiv-val { font-size: 1.1rem; color: var(--accent); }
     .equiv-label { font-size: 0.76rem; color: var(--muted); margin-top: 0.2rem; }
+    .equiv-trip { font-size: 0.74rem; color: var(--accent); margin-top: 0.3rem; }
+    .equiv-trip:empty { display: none; }
     .equiv-note { font-size: 0.72rem; color: var(--muted-2); margin-top: 1rem; line-height: 1.5; }
 
     footer {
@@ -609,6 +611,7 @@
           <div>
             <div class="equiv-val mono" id="equiv-drive">—</div>
             <div class="equiv-label">driving a car</div>
+            <div class="equiv-trip" id="equiv-drive-trip"></div>
           </div>
         </div>
         <div class="equiv-item">
@@ -616,6 +619,7 @@
           <div>
             <div class="equiv-val mono" id="equiv-fly">—</div>
             <div class="equiv-label">flying (per passenger)</div>
+            <div class="equiv-trip" id="equiv-fly-trip"></div>
           </div>
         </div>
       </div>
@@ -1124,10 +1128,49 @@
       const fmt = n => n >= 100 ? Math.round(n).toLocaleString() : n.toFixed(1);
       return fmt(km) + " km · " + fmt(mi) + " mi";
     }
+    // representative trips (km) — road distances for driving, great-circle for flying
+    const DRIVE_TRIPS = [
+      { name:"Manhattan → JFK Airport",       dist:26 },
+      { name:"New York → Philadelphia",       dist:150 },
+      { name:"New York → Washington, DC",     dist:365 },
+      { name:"San Francisco → Los Angeles",   dist:615 },
+      { name:"New York → Chicago",            dist:1270 },
+      { name:"Los Angeles → Seattle",         dist:1830 },
+      { name:"New York → Miami",              dist:2030 },
+      { name:"coast-to-coast (NYC → LA)",     dist:4500 },
+      { name:"Seattle → Miami",               dist:5400 }
+    ];
+    const FLY_TRIPS = [
+      { name:"New York → Boston",             dist:305 },
+      { name:"London → Paris",                dist:345 },
+      { name:"New York → Chicago",            dist:1145 },
+      { name:"London → Athens",               dist:2400 },
+      { name:"New York → Los Angeles",        dist:3940 },
+      { name:"New York → London",             dist:5570 },
+      { name:"New York → Tokyo",              dist:10850 },
+      { name:"London → Sydney",               dist:17000 }
+    ];
+    // pick the trip (optionally repeated) whose total best matches the distance
+    function tripExample(km, trips) {
+      if (!isFinite(km) || km <= 0) return "";
+      let best = null;
+      trips.forEach(t => {
+        const n = Math.max(1, Math.round(km / t.dist));
+        const err = Math.abs(km - n * t.dist) / km;
+        const score = err + 0.02 * (n - 1);   // nudge toward fewer repeats
+        if (!best || score < best.score) best = { name: t.name, n, score };
+      });
+      return (best.n > 1 ? "≈ " + best.n + "× " : "≈ ") + best.name;
+    }
+
     function renderEquivalents(absTotal) {
+      const driveKm = absTotal / DRIVE_KG_PER_KM;
+      const flyKm = absTotal / FLY_KG_PER_KM;
       document.getElementById("equiv-total").textContent = formatNum(absTotal);
-      document.getElementById("equiv-drive").textContent = formatDist(absTotal / DRIVE_KG_PER_KM);
-      document.getElementById("equiv-fly").textContent = formatDist(absTotal / FLY_KG_PER_KM);
+      document.getElementById("equiv-drive").textContent = formatDist(driveKm);
+      document.getElementById("equiv-fly").textContent = formatDist(flyKm);
+      document.getElementById("equiv-drive-trip").textContent = tripExample(driveKm, DRIVE_TRIPS);
+      document.getElementById("equiv-fly-trip").textContent = tripExample(flyKm, FLY_TRIPS);
     }
 
     async function copyValue(el, text) {
