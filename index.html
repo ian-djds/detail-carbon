@@ -690,7 +690,7 @@
       <div class="col-labels">
         <span>Material</span>
         <span id="thick-label">Thickness (mm)</span>
-        <span>Factor (kgCO₂e)</span>
+        <span>Embodied carbon factor (kgCO₂e)</span>
         <span>kgCO₂e/m²</span>
         <span></span>
       </div>
@@ -722,7 +722,7 @@
             <option value="m2">per m²</option>
             <option value="m3">per m³</option>
           </select>
-          <input id="mf-factor" type="number" min="0" step="0.001" placeholder="Factor (kgCO₂e / unit)" />
+          <input id="mf-factor" type="number" min="0" step="0.001" placeholder="Embodied carbon factor (kgCO₂e / unit)" />
           <input id="mf-density" type="number" min="0" step="1" placeholder="Density (kg/m³)" />
           <div class="mf-source-cell">
             <select id="mf-source" title="Source of the carbon factor">
@@ -832,8 +832,8 @@
     materials, carbon = thickness × density × factor, per m² of detail. Biogenic
     carbon, transport (A4), construction, in-use and end-of-life stages are not
     included.</p>
-    <p style="margin-top:0.6rem;"><strong>Factor.</strong> A material's carbon factor is
-    its cradle-to-gate (A1–A3) global-warming potential per unit of material — the figure
+    <p style="margin-top:0.6rem;"><strong>Embodied carbon factor.</strong> A material's
+    factor is its cradle-to-gate (A1–A3) global-warming potential per unit of material — the figure
     entered for each layer. It is produced by a life-cycle assessment and read from an EPD
     or database (see Sources), not computed by this tool:</p>
     <div class="calc-formulas">
