@@ -10,6 +10,8 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { scroll-behavior: smooth; }
+
     :root {
       --bg: #0d0d0d;
       --surface: #161616;
@@ -380,6 +382,14 @@
 
     .empty-note { color: var(--muted-2); font-size: 0.85rem; }
 
+    .results-note {
+      margin-top: 1.3rem;
+      font-size: 0.76rem;
+      color: var(--muted-2);
+    }
+    .results-note a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(125,211,160,0.4); }
+    .results-note a:hover { border-bottom-color: var(--accent); }
+
     /* by-category breakdown */
     .sub-head {
       font-size: 0.72rem;
@@ -539,6 +549,13 @@
       padding-top: 1.2rem;
     }
     footer strong { color: var(--muted); font-weight: 600; }
+    .footer-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 1rem;
+    }
     .source-defs {
       list-style: none;
       margin-top: 0.5rem;
@@ -554,6 +571,25 @@
       color: var(--muted-2);
     }
     .source-defs em { font-style: normal; color: var(--muted); }
+
+    .calc-formulas { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.6rem; }
+    .calc-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 0.7rem; }
+    .calc-when {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted-2);
+      min-width: 96px;
+    }
+    footer code {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.76rem;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.22rem 0.5rem;
+    }
 
     .toolbar {
       display: flex;
@@ -718,6 +754,9 @@
         <h3 class="sub-head">By category</h3>
         <div class="cat-breakdown" id="cat-breakdown"></div>
       </div>
+
+      <p class="results-note">How are these figures derived? See the
+        <a href="#glossary">Glossary of Methods and Definitions</a> below.</p>
     </section>
 
     <!-- COMPARE -->
@@ -771,11 +810,35 @@
   </div>
 
   <footer>
+    <h2 class="footer-title" id="glossary">Glossary of Methods and Definitions</h2>
     <p><strong>Methodology.</strong> Indicative early-design estimates of A1–A3
     (product stage / cradle-to-gate) embodied carbon only. For volume-based
     materials, carbon = thickness × density × factor, per m² of detail. Biogenic
     carbon, transport (A4), construction, in-use and end-of-life stages are not
     included.</p>
+    <p style="margin-top:0.6rem;"><strong>Factor.</strong> A material's carbon factor is
+    its cradle-to-gate (A1–A3) global-warming potential per unit of material — the figure
+    entered for each layer. It is produced by a life-cycle assessment and read from an EPD
+    or database (see Sources), not computed by this tool:</p>
+    <div class="calc-formulas">
+      <div class="calc-row"><span class="calc-when">factor</span><code>factor = (A1 + A2 + A3 GWP) ÷ declared quantity</code></div>
+    </div>
+    <p style="margin-top:0.4rem;">A1 = raw-material supply, A2 = transport to factory,
+    A3 = manufacturing. The result is in kgCO₂e per kg, m², or m³ (the EPD's declared
+    unit). You supply or override it per material.</p>
+    <p style="margin-top:0.6rem;"><strong>Embodied carbon.</strong> Each layer's carbon
+    (kgCO₂e per m² of detail) is then computed from its factor by the formula matching the
+    material's unit:</p>
+    <div class="calc-formulas">
+      <div class="calc-row"><span class="calc-when">per kg</span><code>layer = thickness(m) × density(kg/m³) × factor(kgCO₂e/kg)</code></div>
+      <div class="calc-row"><span class="calc-when">per m³</span><code>layer = thickness(m) × factor(kgCO₂e/m³)</code></div>
+      <div class="calc-row"><span class="calc-when">per m²</span><code>layer = factor(kgCO₂e/m²)</code></div>
+      <div class="calc-row"><span class="calc-when">detail total</span><code>per_m² = Σ layers</code></div>
+      <div class="calc-row"><span class="calc-when">absolute total</span><code>total = per_m² × area(m²)</code></div>
+    </div>
+    <p style="margin-top:0.6rem;">Thickness entered in mm or inches is converted to
+    metres first. Worked example — 200 mm reinforced concrete:
+    <code>0.200 × 2400 × 0.130 = 62.4 kgCO₂e/m²</code>.</p>
     <p style="margin-top:0.6rem;"><strong>Data.</strong> Each factor's source is shown
     under its layer row. Values are representative cradle-to-gate averages in the style
     of the <strong>ICE database</strong> (Inventory of Carbon &amp; Energy, Circular
