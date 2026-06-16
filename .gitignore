@@ -1,0 +1,8 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+
+# Local Claude Code state (keep launch.json tracked; ignore the rest)
+.claude/*
+!.claude/launch.json

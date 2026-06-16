@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detail Carbon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface-2: #1e1e1e;
+      --border: rgba(255,255,255,0.08);
+      --text: #f0f0f0;
+      --muted: rgba(255,255,255,0.4);
+      --muted-2: rgba(255,255,255,0.28);
+      --radius: 16px;
+      --accent: #7dd3a0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem 4rem;
+      gap: 2rem;
+    }
+
+    .mono { font-family: 'Space Mono', monospace; }
+
+    header { text-align: center; }
+    header h1 {
+      font-size: clamp(1.9rem, 4.5vw, 3rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    header p.tagline {
+      margin-top: 0.6rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    header .byline {
+      margin-top: 0.4rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+    }
+
+    .app {
+      width: min(820px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.4rem 1.5rem;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      gap: 1rem;
+    }
+    .card-head h2 {
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* layer rows */
+    .layers { display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .layer {
+      display: grid;
+      grid-template-columns: 1fr 92px 84px 96px 28px;
+      gap: 0.55rem;
+      align-items: center;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 0.55rem 0.6rem;
+    }
+
+    .layer select,
+    .layer input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.55rem;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .layer select { cursor: pointer; }
+    .layer input { font-family: 'Space Mono', monospace; text-align: right; }
+    .layer select:focus,
+    .layer input:focus { border-color: rgba(255,255,255,0.3); }
+    .layer input::-webkit-outer-spin-button,
+    .layer input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .layer input[type=number] { -moz-appearance: textfield; }
+
+    .layer .layer-carbon {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      text-align: right;
+      color: var(--accent);
+      cursor: pointer;
+      white-space: nowrap;
+      padding-right: 2px;
+    }
+    .layer .layer-carbon.copied { color: #fff; }
+    .layer .na { color: var(--muted-2); }
+
+    .remove {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 6px;
+      width: 28px;
+      height: 28px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .remove:hover { color: #ff8080; background: rgba(255,128,128,0.1); }
+
+    .col-labels {
+      display: grid;
+      grid-template-columns: 1fr 92px 84px 96px 28px;
+      gap: 0.55rem;
+      padding: 0 0.6rem 0.3rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+    }
+    .col-labels span:nth-child(2),
+    .col-labels span:nth-child(3),
+    .col-labels span:nth-child(4) { text-align: right; }
+
+    .add-btn {
+      margin-top: 0.9rem;
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      border-radius: 10px;
+      padding: 0.6rem;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease;
+    }
+    .add-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+
+    .area-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .area-row input {
+      width: 110px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      padding: 0.45rem 0.55rem;
+      text-align: right;
+      outline: none;
+    }
+    .area-row input:focus { border-color: rgba(255,255,255,0.3); }
+
+    /* results */
+    .results .totals {
+      display: flex;
+      align-items: flex-end;
+      gap: 1.6rem;
+      flex-wrap: wrap;
+    }
+    .total-main {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .total-main .value {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(2.2rem, 6vw, 3.2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+      cursor: pointer;
+      line-height: 1;
+    }
+    .total-main .value.copied { color: #fff; }
+    .total-main .label { font-size: 0.78rem; color: var(--muted); }
+    .total-sub {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      padding-bottom: 0.2rem;
+    }
+    .total-sub .value {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+    .total-sub .value.copied { color: var(--accent); }
+    .total-sub .label { font-size: 0.74rem; color: var(--muted); }
+
+    .bar {
+      display: flex;
+      width: 100%;
+      height: 26px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 1.4rem;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .bar-seg {
+      height: 100%;
+      transition: flex-basis 0.4s ease, opacity 0.15s ease;
+      position: relative;
+      min-width: 2px;
+    }
+    .bar-seg:hover { opacity: 0.82; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.1rem;
+      margin-top: 0.9rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .legend-item .pct { color: var(--text); font-family: 'Space Mono', monospace; }
+
+    .empty-note { color: var(--muted-2); font-size: 0.85rem; }
+
+    .scope-pill {
+      display: inline-block;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.25rem 0.7rem;
+    }
+
+    footer {
+      width: min(820px, 100%);
+      color: var(--muted-2);
+      font-size: 0.74rem;
+      line-height: 1.5;
+      border-top: 1px solid var(--border);
+      padding-top: 1.2rem;
+    }
+    footer strong { color: var(--muted); font-weight: 600; }
+
+    .toolbar {
+      display: flex;
+      gap: 0.6rem;
+    }
+    .toolbar button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 0.4rem 0.75rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease;
+    }
+    .toolbar button:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+
+    @media (max-width: 620px) {
+      .layer, .col-labels {
+        grid-template-columns: 1fr 70px 70px;
+        grid-auto-rows: auto;
+      }
+      .col-labels { display: none; }
+      .layer { gap: 0.45rem; }
+      .layer select { grid-column: 1 / -1; }
+      .layer .layer-carbon { grid-column: 1 / 3; text-align: left; }
+      .layer .remove { grid-column: 3; justify-self: end; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Detail Carbon 🌱</h1>
+    <p class="tagline">Estimate the embodied carbon of an architectural detail, layer by layer.</p>
+    <p class="byline">by DJDS</p>
+  </header>
+
+  <div class="app">
+
+    <!-- BUILDER -->
+    <section class="card">
+      <div class="card-head">
+        <h2>Detail build-up</h2>
+        <div class="toolbar">
+          <button id="reset-btn">Reset to example</button>
+        </div>
+      </div>
+
+      <div class="col-labels">
+        <span>Material</span>
+        <span>Thickness (mm)</span>
+        <span>Factor</span>
+        <span>kgCO₂e/m²</span>
+        <span></span>
+      </div>
+
+      <div class="layers" id="layers"></div>
+
+      <button class="add-btn" id="add-btn">+ Add layer</button>
+
+      <div class="area-row">
+        <span>Total detail area</span>
+        <input type="number" id="area" min="0" step="0.1" value="1" />
+        <span>m²</span>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="card results">
+      <div class="card-head">
+        <h2>Embodied carbon</h2>
+        <span class="scope-pill">Scope A1–A3 · cradle-to-gate</span>
+      </div>
+
+      <div class="totals">
+        <div class="total-main">
+          <span class="value mono" id="total-per-m2" title="Click to copy">0</span>
+          <span class="label">kgCO₂e per m² of detail</span>
+        </div>
+        <div class="total-sub">
+          <span class="value mono" id="total-abs" title="Click to copy">0</span>
+          <span class="label" id="total-abs-label">kgCO₂e total</span>
+        </div>
+      </div>
+
+      <div class="bar" id="bar"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+  </div>
+
+  <footer>
+    <p><strong>Methodology.</strong> Indicative early-design estimates of A1–A3
+    (product stage / cradle-to-gate) embodied carbon only. For volume-based
+    materials, carbon = thickness × density × factor, per m² of detail. Biogenic
+    carbon, transport (A4), construction, in-use and end-of-life stages are not
+    included.</p>
+    <p style="margin-top:0.6rem;"><strong>Data.</strong> Factors are representative
+    averages (indicative, ICE v3–style) and are <strong>editable</strong> — override
+    them with product-specific EPDs before relying on results. Not a substitute for
+    a full LCA.</p>
+  </footer>
+
+  <script>
+    /* ---------- Materials database ----------
+       factor = kgCO2e per `unit`.
+       unit "kg": needs density (kg/m³); quantity entered as thickness (mm).
+       unit "m3": quantity entered as thickness (mm); carbon = volume × factor.
+       unit "m2": per-m² product; thickness not used; carbon/m² = factor. */
+    const MATERIALS = [
+      // Structure & masonry
+      { id:"rc",      name:"Reinforced concrete (C30/37)", cat:"Structure & masonry", unit:"kg", factor:0.130, density:2400, source:"ICE v3 (indicative)" },
+      { id:"rc_ggbs", name:"Concrete, 50% GGBS blend",     cat:"Structure & masonry", unit:"kg", factor:0.090, density:2350, source:"ICE v3 (indicative)" },
+      { id:"cmu",     name:"Concrete block (CMU)",         cat:"Structure & masonry", unit:"kg", factor:0.107, density:1800, source:"ICE v3 (indicative)" },
+      { id:"brick",   name:"Clay brick",                   cat:"Structure & masonry", unit:"kg", factor:0.210, density:1700, source:"ICE v3 (indicative)" },
+      { id:"steel",   name:"Structural steel section",     cat:"Structure & masonry", unit:"kg", factor:1.550, density:7850, source:"ICE v3 (indicative)" },
+      { id:"alu",     name:"Aluminium (general)",          cat:"Structure & masonry", unit:"kg", factor:6.700, density:2700, source:"ICE v3 (indicative)" },
+      { id:"clt",     name:"Cross-laminated timber (CLT)", cat:"Structure & masonry", unit:"kg", factor:0.440, density:480,  source:"ICE v3 (indicative, excl. biogenic)" },
+      { id:"glulam",  name:"Glulam",                       cat:"Structure & masonry", unit:"kg", factor:0.510, density:500,  source:"ICE v3 (indicative, excl. biogenic)" },
+      { id:"softwood",name:"Softwood, sawn & kiln-dried",  cat:"Structure & masonry", unit:"kg", factor:0.260, density:500,  source:"ICE v3 (indicative, excl. biogenic)" },
+      { id:"ply",     name:"Plywood",                      cat:"Structure & masonry", unit:"kg", factor:0.680, density:600,  source:"ICE v3 (indicative, excl. biogenic)" },
+      { id:"osb",     name:"OSB board",                    cat:"Structure & masonry", unit:"kg", factor:0.460, density:640,  source:"ICE v3 (indicative, excl. biogenic)" },
+      // Insulation
+      { id:"mineral", name:"Mineral wool",                 cat:"Insulation", unit:"kg", factor:1.280, density:30,  source:"ICE v3 (indicative)" },
+      { id:"eps",     name:"EPS",                          cat:"Insulation", unit:"kg", factor:3.290, density:20,  source:"ICE v3 (indicative)" },
+      { id:"xps",     name:"XPS",                          cat:"Insulation", unit:"kg", factor:3.420, density:35,  source:"ICE v3 (indicative)" },
+      { id:"cellulose",name:"Cellulose (recycled)",        cat:"Insulation", unit:"kg", factor:0.420, density:50,  source:"ICE v3 (indicative)" },
+      // Cladding & finishes
+      { id:"gypsum",  name:"Gypsum plasterboard",          cat:"Cladding & finishes", unit:"kg", factor:0.390, density:700,  source:"ICE v3 (indicative)" },
+      { id:"render",  name:"Cement render / screed",       cat:"Cladding & finishes", unit:"kg", factor:0.160, density:1800, source:"ICE v3 (indicative)" },
+      { id:"glass",   name:"Float glass",                  cat:"Cladding & finishes", unit:"kg", factor:1.440, density:2500, source:"ICE v3 (indicative)" },
+      // Membranes & misc (per m²)
+      { id:"membrane",name:"Vapour / air membrane",        cat:"Membranes & misc", unit:"m2", factor:0.350, source:"Indicative (per m²)" }
+    ];
+
+    const MAT_BY_ID = Object.fromEntries(MATERIALS.map(m => [m.id, m]));
+
+    const SEG_COLORS = ["#7dd3a0","#6aa9e9","#e9c46a","#e88c7d","#b58ce9","#5fc8c1","#e0a0c8","#9fcf6a"];
+
+    const STORE_KEY = "detail_carbon_state_v1";
+
+    const EXAMPLE = {
+      area: 1,
+      layers: [
+        { matId:"gypsum",  thickness:12.5, factor:0.390 },
+        { matId:"mineral", thickness:100,  factor:1.280 },
+        { matId:"clt",     thickness:100,  factor:0.440 }
+      ]
+    };
+
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.layers)) return parsed;
+        }
+      } catch (e) {}
+      return structuredCloneSafe(EXAMPLE);
+    }
+
+    function structuredCloneSafe(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+    function saveState() {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+
+    function num(v) { const n = parseFloat(v); return isFinite(n) ? n : 0; }
+
+    // carbon per m² of detail for a single layer
+    function layerCarbon(layer) {
+      const mat = MAT_BY_ID[layer.matId];
+      if (!mat) return null;
+      const factor = num(layer.factor);
+      if (mat.unit === "m2") return factor;                 // per-m² product
+      const t = num(layer.thickness) / 1000;                // mm -> m
+      if (mat.unit === "m3") return t * factor;              // volume × factor
+      // unit kg: mass per m² = thickness(m) × density
+      return t * num(mat.density) * factor;
+    }
+
+    function buildMaterialSelect(selectedId) {
+      const sel = document.createElement("select");
+      const cats = [...new Set(MATERIALS.map(m => m.cat))];
+      cats.forEach(cat => {
+        const og = document.createElement("optgroup");
+        og.label = cat;
+        MATERIALS.filter(m => m.cat === cat).forEach(m => {
+          const opt = document.createElement("option");
+          opt.value = m.id;
+          opt.textContent = m.name;
+          if (m.id === selectedId) opt.selected = true;
+          og.appendChild(opt);
+        });
+        sel.appendChild(og);
+      });
+      return sel;
+    }
+
+    function renderLayers() {
+      const container = document.getElementById("layers");
+      container.innerHTML = "";
+
+      state.layers.forEach((layer, i) => {
+        const mat = MAT_BY_ID[layer.matId] || MATERIALS[0];
+        const row = document.createElement("div");
+        row.className = "layer";
+
+        // material select
+        const sel = buildMaterialSelect(layer.matId);
+        sel.addEventListener("change", () => {
+          layer.matId = sel.value;
+          const newMat = MAT_BY_ID[layer.matId];
+          layer.factor = newMat.factor;            // reset factor to material default
+          recalc(); renderLayers();
+        });
+
+        // thickness input
+        const thick = document.createElement("input");
+        thick.type = "number"; thick.min = "0"; thick.step = "1";
+        thick.value = layer.thickness ?? "";
+        if (mat.unit === "m2") { thick.value = ""; thick.placeholder = "n/a"; thick.disabled = true; }
+        thick.addEventListener("input", () => { layer.thickness = thick.value; recalc(); });
+
+        // factor input
+        const fac = document.createElement("input");
+        fac.type = "number"; fac.min = "0"; fac.step = "0.001";
+        fac.value = layer.factor;
+        fac.title = "kgCO₂e per " + mat.unit + " — editable; " + mat.source;
+        fac.addEventListener("input", () => { layer.factor = fac.value; recalc(); });
+
+        // computed carbon
+        const carbon = document.createElement("span");
+        carbon.className = "layer-carbon";
+        const c = layerCarbon(layer);
+        carbon.textContent = c == null ? "—" : c.toFixed(1);
+        carbon.title = "Click to copy";
+        carbon.addEventListener("click", () => copyValue(carbon, (c || 0).toFixed(2)));
+
+        // remove
+        const rm = document.createElement("button");
+        rm.className = "remove"; rm.textContent = "×"; rm.title = "Remove layer";
+        rm.addEventListener("click", () => {
+          state.layers.splice(i, 1);
+          recalc(); renderLayers();
+        });
+
+        row.append(sel, thick, fac, carbon, rm);
+        container.appendChild(row);
+      });
+
+      if (state.layers.length === 0) {
+        const note = document.createElement("p");
+        note.className = "empty-note";
+        note.textContent = "No layers yet — add one to start.";
+        container.appendChild(note);
+      }
+    }
+
+    function recalc() {
+      state.area = num(document.getElementById("area").value);
+
+      const contribs = state.layers.map(l => {
+        const c = layerCarbon(l);
+        const mat = MAT_BY_ID[l.matId];
+        return { name: mat ? mat.name : "?", carbon: (c == null ? 0 : c) };
+      });
+
+      const perM2 = contribs.reduce((s, c) => s + c.carbon, 0);
+      const abs = perM2 * (state.area || 0);
+
+      document.getElementById("total-per-m2").textContent = formatNum(perM2);
+      document.getElementById("total-abs").textContent = formatNum(abs);
+      document.getElementById("total-abs-label").textContent =
+        "kgCO₂e total (" + (state.area || 0) + " m²)";
+
+      renderBreakdown(contribs, perM2);
+
+      // refresh per-layer numbers in place
+      const rows = document.querySelectorAll("#layers .layer .layer-carbon");
+      rows.forEach((el, i) => {
+        if (contribs[i]) el.textContent = contribs[i].carbon.toFixed(1);
+      });
+
+      saveState();
+    }
+
+    function renderBreakdown(contribs, perM2) {
+      const bar = document.getElementById("bar");
+      const legend = document.getElementById("legend");
+      bar.innerHTML = ""; legend.innerHTML = "";
+      if (perM2 <= 0) return;
+
+      contribs.forEach((c, i) => {
+        if (c.carbon <= 0) return;
+        const pct = (c.carbon / perM2) * 100;
+        const color = SEG_COLORS[i % SEG_COLORS.length];
+
+        const seg = document.createElement("div");
+        seg.className = "bar-seg";
+        seg.style.flexBasis = pct + "%";
+        seg.style.flexGrow = "0";
+        seg.style.background = color;
+        seg.title = c.name + " — " + c.carbon.toFixed(1) + " kgCO₂e/m² (" + pct.toFixed(0) + "%)";
+        bar.appendChild(seg);
+
+        const item = document.createElement("div");
+        item.className = "legend-item";
+        item.innerHTML = '<span class="legend-dot" style="background:' + color + '"></span>' +
+          c.name + ' <span class="pct">' + pct.toFixed(0) + '%</span>';
+        legend.appendChild(item);
+      });
+    }
+
+    function formatNum(n) {
+      if (!isFinite(n)) return "0";
+      if (n >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      return n.toFixed(1);
+    }
+
+    async function copyValue(el, text) {
+      try { await navigator.clipboard.writeText(text); }
+      catch {
+        const ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); ta.remove();
+      }
+      el.classList.add("copied");
+      setTimeout(() => el.classList.remove("copied"), 900);
+    }
+
+    // wire up controls
+    document.getElementById("add-btn").addEventListener("click", () => {
+      const def = MATERIALS[0];
+      state.layers.push({ matId: def.id, thickness: 100, factor: def.factor });
+      recalc(); renderLayers();
+    });
+
+    document.getElementById("area").addEventListener("input", recalc);
+
+    document.getElementById("reset-btn").addEventListener("click", () => {
+      state = structuredCloneSafe(EXAMPLE);
+      document.getElementById("area").value = state.area;
+      recalc(); renderLayers();
+    });
+
+    // copy totals
+    document.getElementById("total-per-m2").addEventListener("click", function () {
+      copyValue(this, this.textContent);
+    });
+    document.getElementById("total-abs").addEventListener("click", function () {
+      copyValue(this, this.textContent);
+    });
+
+    // init
+    document.getElementById("area").value = state.area ?? 1;
+    renderLayers();
+    recalc();
+  </script>
+</body>
+</html>
