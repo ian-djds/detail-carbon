@@ -425,6 +425,24 @@
     .delta .lower { color: var(--accent); }
     .delta .higher { color: #e88c7d; }
 
+    /* in-context equivalents */
+    .equiv-intro { font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem; }
+    .equiv-intro #equiv-total { color: var(--text); }
+    .equiv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+    .equiv-item {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 0.9rem 1rem;
+    }
+    .equiv-icon { font-size: 1.7rem; line-height: 1; flex-shrink: 0; }
+    .equiv-val { font-size: 1.1rem; color: var(--accent); }
+    .equiv-label { font-size: 0.76rem; color: var(--muted); margin-top: 0.2rem; }
+    .equiv-note { font-size: 0.72rem; color: var(--muted-2); margin-top: 1rem; line-height: 1.5; }
+
     footer {
       width: min(820px, 100%);
       color: var(--muted-2);
@@ -483,6 +501,7 @@
       .layer .remove { grid-column: 3; justify-self: end; }
       .cat-row { grid-template-columns: 96px 1fr 78px; gap: 0.5rem; }
       .compare-grid { grid-template-columns: 1fr; }
+      .equiv-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -576,6 +595,34 @@
       <div class="delta" id="delta"></div>
     </section>
 
+    <!-- IN CONTEXT -->
+    <section class="card equiv">
+      <div class="card-head">
+        <h2>In context</h2>
+        <span class="scope-pill">Indicative equivalents</span>
+      </div>
+      <p class="equiv-intro">A total of <span class="mono" id="equiv-total">0</span> kgCO₂e is
+        roughly the same as:</p>
+      <div class="equiv-grid">
+        <div class="equiv-item">
+          <span class="equiv-icon">🚗</span>
+          <div>
+            <div class="equiv-val mono" id="equiv-drive">—</div>
+            <div class="equiv-label">driving a car</div>
+          </div>
+        </div>
+        <div class="equiv-item">
+          <span class="equiv-icon">✈️</span>
+          <div>
+            <div class="equiv-val mono" id="equiv-fly">—</div>
+            <div class="equiv-label">flying (per passenger)</div>
+          </div>
+        </div>
+      </div>
+      <p class="equiv-note">Assumes ≈0.17 kgCO₂e/km driving (average petrol car) and
+        ≈0.15 kgCO₂e/km flying (economy, per passenger). Indicative comparison only.</p>
+    </section>
+
   </div>
 
   <footer>
@@ -628,10 +675,10 @@
       { id:"render",  name:"Cement render",                cat:"Cladding", unit:"kg", factor:0.160, density:1800, source:"ICE v3 (indicative)" },
       { id:"fibrecement",name:"Fibre cement board",        cat:"Cladding", unit:"kg", factor:1.050, density:1400, source:"ICE v3 (indicative)" },
       { id:"terracotta",name:"Terracotta cladding",        cat:"Cladding", unit:"kg", factor:0.520, density:1900, source:"Indicative" },
-      // Interior finishes
-      { id:"gypsum",  name:"Gypsum plasterboard",          cat:"Interior finishes", unit:"kg", factor:0.390, density:700,  source:"ICE v3 (indicative)" },
-      { id:"ceramic", name:"Ceramic tile",                 cat:"Interior finishes", unit:"kg", factor:0.780, density:2000, source:"ICE v3 (indicative)" },
-      { id:"screed",  name:"Cement screed (floor)",        cat:"Interior finishes", unit:"kg", factor:0.160, density:1800, source:"ICE v3 (indicative)" },
+      // Interior finish
+      { id:"gypsum",  name:"Gypsum plasterboard",          cat:"Interior finish", unit:"kg", factor:0.390, density:700,  source:"ICE v3 (indicative)" },
+      { id:"ceramic", name:"Ceramic tile",                 cat:"Interior finish", unit:"kg", factor:0.780, density:2000, source:"ICE v3 (indicative)" },
+      { id:"screed",  name:"Cement screed (floor)",        cat:"Interior finish", unit:"kg", factor:0.160, density:1800, source:"ICE v3 (indicative)" },
       // Glazing
       { id:"glass",     name:"Float glass (pane)",         cat:"Glazing", unit:"kg", factor:1.440, density:2500, source:"ICE v3 (indicative)" },
       { id:"igu_double",name:"Double-glazed unit (IGU)",   cat:"Glazing", unit:"m2", factor:30.0, source:"Indicative (per m²)" },
@@ -656,7 +703,7 @@
       "Structure & masonry": "#6aa9e9",
       "Insulation": "#e9c46a",
       "Cladding": "#e88c7d",
-      "Interior finishes": "#e0a0c8",
+      "Interior finish": "#e0a0c8",
       "Glazing": "#5fc8c1",
       "Doors": "#9fcf6a",
       "Membranes & misc": "#b58ce9"
@@ -863,6 +910,7 @@
 
       renderBreakdown(contribs, perM2);
       renderCategoryBreakdown(perM2);
+      renderEquivalents(abs);
 
       // refresh per-layer numbers in place
       const rows = document.querySelectorAll("#layers .layer .layer-carbon");
@@ -1064,6 +1112,22 @@
       if (!isFinite(n)) return "0";
       if (n >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
       return n.toFixed(1);
+    }
+
+    // relatable equivalents for the absolute total
+    const KM_PER_MILE = 1.609344;
+    const DRIVE_KG_PER_KM = 0.17;   // average petrol car
+    const FLY_KG_PER_KM = 0.15;     // economy, per passenger
+    function formatDist(km) {
+      if (!isFinite(km) || km <= 0) return "0 km";
+      const mi = km / KM_PER_MILE;
+      const fmt = n => n >= 100 ? Math.round(n).toLocaleString() : n.toFixed(1);
+      return fmt(km) + " km · " + fmt(mi) + " mi";
+    }
+    function renderEquivalents(absTotal) {
+      document.getElementById("equiv-total").textContent = formatNum(absTotal);
+      document.getElementById("equiv-drive").textContent = formatDist(absTotal / DRIVE_KG_PER_KM);
+      document.getElementById("equiv-fly").textContent = formatDist(absTotal / FLY_KG_PER_KM);
     }
 
     async function copyValue(el, text) {
