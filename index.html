@@ -222,6 +222,91 @@
     }
     .area-row input:focus { border-color: rgba(255,255,255,0.3); }
 
+    /* add-material form */
+    .mat-form {
+      margin-top: 1.1rem;
+      padding-top: 1.1rem;
+      border-top: 1px solid var(--border);
+    }
+    .mf-hint {
+      font-size: 0.74rem;
+      color: var(--muted-2);
+      line-height: 1.5;
+      margin-bottom: 0.9rem;
+    }
+    .mf-hint strong { color: var(--muted); font-weight: 600; }
+    .mat-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+    .mat-form-grid input,
+    .mat-form-grid select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.55rem;
+      outline: none;
+    }
+    .mat-form-grid input:focus,
+    .mat-form-grid select:focus { border-color: rgba(255,255,255,0.3); }
+    .mat-form-grid select option { color: #111; background: #fff; }
+    .mf-source-cell { display: flex; flex-direction: column; gap: 0.6rem; grid-column: 2; }
+    .mat-form-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+    }
+    .mat-form-actions button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 0.45rem 0.85rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+    .mat-form-actions button:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+    .mat-form-actions .mf-primary {
+      background: rgba(125,211,160,0.12);
+      border-color: rgba(125,211,160,0.4);
+      color: var(--accent);
+    }
+    .mat-form-actions .mf-primary:hover { background: rgba(125,211,160,0.2); color: var(--accent); }
+    .mat-form-msg { font-size: 0.76rem; color: var(--muted); }
+    .mat-form-msg.err { color: #e88c7d; }
+    .mat-form-msg.ok { color: var(--accent); }
+    .mat-custom-list { margin-top: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .mat-custom-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .mat-custom-item .cust-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .mat-custom-item .cust-name { color: var(--text); }
+    .mat-custom-item button {
+      margin-left: auto;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 6px;
+      width: 24px;
+      height: 24px;
+    }
+    .mat-custom-item button:hover { color: #ff8080; background: rgba(255,128,128,0.1); }
+
     /* results */
     .results .totals {
       display: flex;
@@ -454,6 +539,21 @@
       padding-top: 1.2rem;
     }
     footer strong { color: var(--muted); font-weight: 600; }
+    .source-defs {
+      list-style: none;
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .source-defs li { padding-left: 0.9rem; position: relative; }
+    .source-defs li::before {
+      content: "·";
+      position: absolute;
+      left: 0.15rem;
+      color: var(--muted-2);
+    }
+    .source-defs em { font-style: normal; color: var(--muted); }
 
     .toolbar {
       display: flex;
@@ -504,6 +604,8 @@
       .cat-row { grid-template-columns: 96px 1fr 78px; gap: 0.5rem; }
       .compare-grid { grid-template-columns: 1fr; }
       .equiv-grid { grid-template-columns: 1fr; }
+      .mat-form-grid { grid-template-columns: 1fr; }
+      .mf-source-cell { grid-column: auto; }
     }
   </style>
 </head>
@@ -526,6 +628,7 @@
             <button data-unit="mm" class="active">mm</button>
             <button data-unit="in">in</button>
           </div>
+          <button id="new-mat-btn">+ Material</button>
           <button id="reset-btn">Reset to example</button>
         </div>
       </div>
@@ -549,6 +652,44 @@
           <button data-unit="m2" class="active">m²</button>
           <button data-unit="ft2">ft²</button>
         </div>
+      </div>
+
+      <!-- Add custom material -->
+      <div class="mat-form" id="mat-form" hidden>
+        <h3 class="sub-head">Add a material</h3>
+        <p class="mf-hint">From an <strong>EPD</strong>, use the <strong>A1–A3 GWP</strong>
+          (kg CO₂-eq) as the factor, and choose the unit that matches the EPD's declared
+          unit (per kg / m² / m³). Ignore A4–C stages. See <strong>Sources</strong> at the
+          foot of the page for more.</p>
+        <div class="mat-form-grid">
+          <input id="mf-name" placeholder="Material name" />
+          <select id="mf-cat" title="Category"></select>
+          <input id="mf-newcat" placeholder="New category name" hidden />
+          <select id="mf-unit" title="How the factor is measured">
+            <option value="kg">per kg (needs density)</option>
+            <option value="m2">per m²</option>
+            <option value="m3">per m³</option>
+          </select>
+          <input id="mf-factor" type="number" min="0" step="0.001" placeholder="Factor (kgCO₂e / unit)" />
+          <input id="mf-density" type="number" min="0" step="1" placeholder="Density (kg/m³)" />
+          <div class="mf-source-cell">
+            <select id="mf-source" title="Source of the carbon factor">
+              <option value="Indicative / assumed">Source: Indicative / assumed</option>
+              <option value="EPD (product-specific)">Source: EPD (product-specific)</option>
+              <option value="ICE v3 (Inventory of Carbon &amp; Energy)">Source: ICE v3 database</option>
+              <option value="EC3 database">Source: EC3 database</option>
+              <option value="Manufacturer data">Source: Manufacturer data</option>
+              <option value="__custom__">Source: Custom…</option>
+            </select>
+            <input id="mf-source-custom" placeholder="Custom source" hidden />
+          </div>
+        </div>
+        <div class="mat-form-actions">
+          <button id="mf-add" class="mf-primary">Add material</button>
+          <button id="mf-cancel">Done</button>
+          <span class="mat-form-msg" id="mf-msg"></span>
+        </div>
+        <div class="mat-custom-list" id="mat-custom-list"></div>
       </div>
     </section>
 
@@ -641,6 +782,31 @@
     Ecology) and are indicative only. Every factor is <strong>editable</strong> —
     override it with a value from a product-specific <strong>EPD</strong> (Environmental
     Product Declaration) before relying on results. Not a substitute for a full LCA.</p>
+    <p style="margin-top:0.6rem;"><strong>Sources.</strong> The source options in
+    “Add a material” mean:</p>
+    <ul class="source-defs">
+      <li><strong>EPD — Environmental Product Declaration:</strong> a standardized,
+      independently verified datasheet of a specific product's environmental impacts
+      (per ISO 14025 / EN 15804). The most reliable, product-specific figure.
+      <em>Where:</em> in the EPD's LCA-results table, read the GWP row (kg CO₂-eq),
+      columns A1–A3, and note the declared unit.</li>
+      <li><strong>ICE — Inventory of Carbon &amp; Energy:</strong> an open database of
+      generic, average material factors (maintained by Circular Ecology). Useful for
+      early design; not tied to a specific product. <em>Where:</em> download the free
+      ICE database spreadsheet from circularecology.com and read the “Embodied Carbon
+      (kgCO₂e/kg)” column for your material.</li>
+      <li><strong>EC3 — Embodied Carbon in Construction Calculator:</strong> a free
+      database/tool (Building Transparency) that aggregates real product EPDs so you
+      can compare actual products. <em>Where:</em> search a material at
+      buildingtransparency.org and use a product's A1–A3 GWP, or the category's
+      “industry average” figure.</li>
+      <li><strong>Manufacturer data:</strong> figures published by a manufacturer
+      (datasheet or brochure) that may not be independently third-party verified.
+      <em>Where:</em> the product's datasheet, technical/specification sheet, or the
+      maker's sustainability page — look for a stated GWP / kgCO₂e value.</li>
+      <li><strong>Indicative / assumed:</strong> a representative or estimated
+      placeholder value — verify against a real source before relying on it.</li>
+    </ul>
   </footer>
 
   <script>
@@ -649,7 +815,7 @@
        unit "kg": needs density (kg/m³); quantity entered as thickness (mm).
        unit "m3": quantity entered as thickness (mm); carbon = volume × factor.
        unit "m2": per-m² product; thickness not used; carbon/m² = factor. */
-    const MATERIALS = [
+    const BUILTIN_MATERIALS = [
       // Structure & masonry
       { id:"rc",      name:"Reinforced concrete (C30/37)", cat:"Structure & masonry", unit:"kg", factor:0.130, density:2400, source:"ICE v3 (indicative)" },
       { id:"rc_ggbs", name:"Concrete, 50% GGBS blend",     cat:"Structure & masonry", unit:"kg", factor:0.090, density:2350, source:"ICE v3 (indicative)" },
@@ -698,7 +864,13 @@
       { id:"paint",   name:"Paint (2 coats)",              cat:"Membranes & misc", unit:"m2", factor:1.200, source:"Indicative (per m²)" }
     ];
 
-    const MAT_BY_ID = Object.fromEntries(MATERIALS.map(m => [m.id, m]));
+    // MATERIALS = built-ins + any user-added custom materials (rebuilt from state)
+    let MATERIALS = BUILTIN_MATERIALS.slice();
+    let MAT_BY_ID = Object.fromEntries(MATERIALS.map(m => [m.id, m]));
+    function rebuildMaterials() {
+      MATERIALS = BUILTIN_MATERIALS.concat((state && state.customMaterials) || []);
+      MAT_BY_ID = Object.fromEntries(MATERIALS.map(m => [m.id, m]));
+    }
 
     const SEG_COLORS = ["#7dd3a0","#6aa9e9","#e9c46a","#e88c7d","#b58ce9","#5fc8c1","#e0a0c8","#9fcf6a"];
 
@@ -712,6 +884,14 @@
       "Doors": "#9fcf6a",
       "Membranes & misc": "#b58ce9"
     };
+
+    // color for any category — known ones from CAT_COLORS, new ones from the palette
+    function catColor(cat) {
+      if (CAT_COLORS[cat]) return CAT_COLORS[cat];
+      const cats = [...new Set(MATERIALS.map(m => m.cat))];
+      const i = cats.indexOf(cat);
+      return SEG_COLORS[(i < 0 ? 0 : i) % SEG_COLORS.length];
+    }
 
     // shorter display labels for the By Category chart
     const CAT_LABELS = { "Structure & masonry": "Structure" };
@@ -732,6 +912,8 @@
     if (!state.options) state.options = { A: null, B: null };
     if (state.thickUnit !== "in") state.thickUnit = "mm";
     if (state.areaUnit !== "ft2") state.areaUnit = "m2";
+    if (!Array.isArray(state.customMaterials)) state.customMaterials = [];
+    rebuildMaterials();
 
     function loadState() {
       try {
@@ -866,7 +1048,7 @@
         matCell.className = "mat-cell";
         const dot = document.createElement("span");
         dot.className = "mat-dot";
-        dot.style.background = CAT_COLORS[mat.cat] || "#7dd3a0";
+        dot.style.background = catColor(mat.cat);
         dot.title = catLabel(mat.cat);
         matCell.append(dot, sel);
 
@@ -893,7 +1075,7 @@
 
     // segment color: match the By Category palette, fall back to the rotating palette
     function segColor(contrib, i) {
-      return (contrib && CAT_COLORS[contrib.cat]) || SEG_COLORS[i % SEG_COLORS.length];
+      return (contrib && contrib.cat) ? catColor(contrib.cat) : SEG_COLORS[i % SEG_COLORS.length];
     }
 
     function totalPerM2(layers) {
@@ -973,7 +1155,7 @@
 
       entries.forEach(([cat, val]) => {
         const pct = (val / perM2) * 100;          // share of total — width matches the % shown
-        const color = CAT_COLORS[cat] || "#7dd3a0";
+        const color = catColor(cat);
 
         const row = document.createElement("div");
         row.className = "cat-row";
@@ -1194,16 +1376,155 @@
     document.getElementById("area").addEventListener("input", recalc);
 
     document.getElementById("reset-btn").addEventListener("click", () => {
-      const savedOptions = state.options;          // keep saved comparisons + units across a reset
+      const savedOptions = state.options;          // keep saved comparisons + units + custom materials
       const savedThick = state.thickUnit, savedArea = state.areaUnit;
+      const savedCustom = state.customMaterials;
       state = structuredCloneSafe(EXAMPLE);
       state.options = savedOptions || { A: null, B: null };
       state.thickUnit = savedThick === "in" ? "in" : "mm";
       state.areaUnit = savedArea === "ft2" ? "ft2" : "m2";
+      state.customMaterials = Array.isArray(savedCustom) ? savedCustom : [];
+      rebuildMaterials();
       document.getElementById("area").value = areaToDisplay(state.area);
       applyThickUnit();
       applyAreaUnit();
       recalc(); renderLayers();
+    });
+
+    /* ---------- Add custom materials ---------- */
+    const NEW_CAT_VALUE = "__new__";
+    const CUSTOM_SOURCE_VALUE = "__custom__";
+
+    function uniqueCats() { return [...new Set(MATERIALS.map(m => m.cat))]; }
+
+    function populateCatSelect() {
+      const sel = document.getElementById("mf-cat");
+      const prev = sel.value;
+      sel.innerHTML = "";
+      uniqueCats().forEach(c => {
+        const o = document.createElement("option");
+        o.value = c; o.textContent = catLabel(c);
+        sel.appendChild(o);
+      });
+      const o = document.createElement("option");
+      o.value = NEW_CAT_VALUE; o.textContent = "＋ New category…";
+      sel.appendChild(o);
+      if (prev && [...sel.options].some(op => op.value === prev)) sel.value = prev;
+    }
+
+    function syncMatFormFields() {
+      document.getElementById("mf-newcat").hidden =
+        document.getElementById("mf-cat").value !== NEW_CAT_VALUE;
+      // density only relevant for per-kg materials (per-m²/per-m³ use the factor directly)
+      const unit = document.getElementById("mf-unit").value;
+      document.getElementById("mf-density").hidden = (unit !== "kg");
+      // custom source text only when "Custom…" is chosen
+      document.getElementById("mf-source-custom").hidden =
+        document.getElementById("mf-source").value !== CUSTOM_SOURCE_VALUE;
+    }
+
+    function setMatMsg(text, kind) {
+      const el = document.getElementById("mf-msg");
+      el.textContent = text || "";
+      el.className = "mat-form-msg" + (kind ? " " + kind : "");
+    }
+
+    function slugify(s) {
+      return s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 24) || "mat";
+    }
+
+    function addCustomMaterial() {
+      const name = document.getElementById("mf-name").value.trim();
+      const catSel = document.getElementById("mf-cat").value;
+      const cat = catSel === NEW_CAT_VALUE
+        ? document.getElementById("mf-newcat").value.trim()
+        : catSel;
+      const unit = document.getElementById("mf-unit").value;
+      const factor = parseFloat(document.getElementById("mf-factor").value);
+      const density = parseFloat(document.getElementById("mf-density").value);
+      const srcSel = document.getElementById("mf-source").value;
+      const source = srcSel === CUSTOM_SOURCE_VALUE
+        ? (document.getElementById("mf-source-custom").value.trim() || "User-added")
+        : srcSel;
+
+      if (!name) return setMatMsg("Enter a material name.", "err");
+      if (!cat) return setMatMsg("Enter a category name.", "err");
+      if (!isFinite(factor) || factor < 0) return setMatMsg("Enter a valid factor (≥ 0).", "err");
+      if (unit === "kg" && (!isFinite(density) || density <= 0))
+        return setMatMsg("Per-kg materials need a density.", "err");
+
+      let id = "cust_" + slugify(name);
+      let n = 2; while (MAT_BY_ID[id]) id = "cust_" + slugify(name) + "_" + n++;
+
+      const mat = { id, name, cat, unit, factor, source, custom: true };
+      if (unit === "kg") mat.density = density;
+
+      state.customMaterials.push(mat);
+      rebuildMaterials();
+      saveState();
+      populateCatSelect();
+      renderCustomList();
+      renderLayers();
+      // clear name + factor for quick entry of the next one
+      document.getElementById("mf-name").value = "";
+      document.getElementById("mf-factor").value = "";
+      setMatMsg("Added “" + name + "”.", "ok");
+    }
+
+    function removeCustomMaterial(id) {
+      state.customMaterials = state.customMaterials.filter(m => m.id !== id);
+      // any layers using it fall back to the default material
+      state.layers.forEach(l => { if (l.matId === id) { l.matId = BUILTIN_MATERIALS[0].id; l.factor = BUILTIN_MATERIALS[0].factor; } });
+      rebuildMaterials();
+      saveState();
+      populateCatSelect();
+      renderCustomList();
+      recalc(); renderLayers();
+    }
+
+    function renderCustomList() {
+      const wrap = document.getElementById("mat-custom-list");
+      wrap.innerHTML = "";
+      (state.customMaterials || []).forEach(m => {
+        const row = document.createElement("div");
+        row.className = "mat-custom-item";
+        const dot = document.createElement("span");
+        dot.className = "cust-dot";
+        dot.style.background = catColor(m.cat);
+        const label = document.createElement("span");
+        label.innerHTML = '<span class="cust-name">' + m.name + '</span> · ' +
+          catLabel(m.cat) + ' · ' + m.factor + ' kgCO₂e/' + (m.unit === "m2" ? "m²" : m.unit === "m3" ? "m³" : "kg");
+        const rm = document.createElement("button");
+        rm.textContent = "×"; rm.title = "Remove this material";
+        rm.addEventListener("click", () => removeCustomMaterial(m.id));
+        row.append(dot, label, rm);
+        wrap.appendChild(row);
+      });
+    }
+
+    document.getElementById("new-mat-btn").addEventListener("click", () => {
+      const form = document.getElementById("mat-form");
+      form.hidden = !form.hidden;
+      if (!form.hidden) {
+        // start fresh each time the form is opened
+        ["mf-name","mf-factor","mf-density","mf-source-custom","mf-newcat"].forEach(id => {
+          document.getElementById(id).value = "";
+        });
+        document.getElementById("mf-unit").value = "kg";
+        document.getElementById("mf-source").selectedIndex = 0;
+        populateCatSelect();
+        syncMatFormFields();
+        renderCustomList();
+        setMatMsg("");
+        document.getElementById("mf-name").focus();
+      }
+    });
+    document.getElementById("mf-cat").addEventListener("change", syncMatFormFields);
+    document.getElementById("mf-unit").addEventListener("change", syncMatFormFields);
+    document.getElementById("mf-source").addEventListener("change", syncMatFormFields);
+    document.getElementById("mf-add").addEventListener("click", addCustomMaterial);
+    document.getElementById("mf-cancel").addEventListener("click", () => {
+      document.getElementById("mat-form").hidden = true;
     });
 
     // compare options
