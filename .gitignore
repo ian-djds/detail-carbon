@@ -6,3 +6,5 @@ Thumbs.db
 # Local Claude Code state (keep launch.json tracked; ignore the rest)
 .claude/*
 !.claude/launch.json
+
+.vercel
