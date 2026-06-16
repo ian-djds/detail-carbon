@@ -620,6 +620,10 @@
       "Membranes & misc": "#b58ce9"
     };
 
+    // shorter display labels for the By Category chart
+    const CAT_LABELS = { "Structure & masonry": "Structure" };
+    function catLabel(cat) { return CAT_LABELS[cat] || cat; }
+
     const STORE_KEY = "detail_carbon_state_v1";
 
     const EXAMPLE = {
@@ -695,7 +699,7 @@
       const cats = [...new Set(MATERIALS.map(m => m.cat))];
       cats.forEach(cat => {
         const og = document.createElement("optgroup");
-        og.label = cat;
+        og.label = catLabel(cat);
         MATERIALS.filter(m => m.cat === cat).forEach(m => {
           const opt = document.createElement("option");
           opt.value = m.id;
@@ -781,8 +785,13 @@
       return layers.map(l => {
         const c = layerCarbon(l);
         const mat = MAT_BY_ID[l.matId];
-        return { name: mat ? mat.name : "?", carbon: (c == null ? 0 : c) };
+        return { name: mat ? mat.name : "?", cat: mat ? mat.cat : null, carbon: (c == null ? 0 : c) };
       });
+    }
+
+    // segment color: match the By Category palette, fall back to the rotating palette
+    function segColor(contrib, i) {
+      return (contrib && CAT_COLORS[contrib.cat]) || SEG_COLORS[i % SEG_COLORS.length];
     }
 
     function totalPerM2(layers) {
@@ -822,7 +831,7 @@
       contribs.forEach((c, i) => {
         if (c.carbon <= 0) return;
         const pct = (c.carbon / perM2) * 100;
-        const color = SEG_COLORS[i % SEG_COLORS.length];
+        const color = segColor(c, i);
 
         const seg = document.createElement("div");
         seg.className = "bar-seg";
@@ -868,7 +877,7 @@
 
         const name = document.createElement("span");
         name.className = "cat-name";
-        name.textContent = cat;
+        name.textContent = catLabel(cat);
 
         const track = document.createElement("div");
         track.className = "cat-bar-track";
@@ -948,7 +957,7 @@
           seg.className = "seg";
           seg.style.flexBasis = (c.carbon / perM2 * 100) + "%";
           seg.style.flexGrow = "0";
-          seg.style.background = SEG_COLORS[i % SEG_COLORS.length];
+          seg.style.background = segColor(c, i);
           seg.title = c.name + " — " + c.carbon.toFixed(1) + " kgCO₂e/m²";
           bar.appendChild(seg);
         });
