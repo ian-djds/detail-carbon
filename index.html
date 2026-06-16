@@ -113,6 +113,12 @@
       transition: border-color 0.15s ease;
     }
     .layer select { cursor: pointer; }
+    /* dropdown list items: dark text on light bg so the open menu is readable */
+    .layer select option,
+    .layer select optgroup {
+      color: #111;
+      background: #fff;
+    }
     .layer input { font-family: 'Space Mono', monospace; text-align: right; }
     .layer select:focus,
     .layer input:focus { border-color: rgba(255,255,255,0.3); }
@@ -595,17 +601,38 @@
       { id:"softwood",name:"Softwood, sawn & kiln-dried",  cat:"Structure & masonry", unit:"kg", factor:0.260, density:500,  source:"ICE v3 (indicative, excl. biogenic)" },
       { id:"ply",     name:"Plywood",                      cat:"Structure & masonry", unit:"kg", factor:0.680, density:600,  source:"ICE v3 (indicative, excl. biogenic)" },
       { id:"osb",     name:"OSB board",                    cat:"Structure & masonry", unit:"kg", factor:0.460, density:640,  source:"ICE v3 (indicative, excl. biogenic)" },
+      { id:"steel_rec",name:"Structural steel (recycled, EAF)", cat:"Structure & masonry", unit:"kg", factor:0.680, density:7850, source:"ICE v3 (indicative, recycled)" },
+      { id:"aac",     name:"Aerated concrete block (AAC)",  cat:"Structure & masonry", unit:"kg", factor:0.280, density:600,  source:"ICE v3 (indicative)" },
+      { id:"stone",   name:"Natural stone",                cat:"Structure & masonry", unit:"kg", factor:0.079, density:2200, source:"ICE v3 (indicative)" },
+      { id:"rammed",  name:"Rammed earth",                 cat:"Structure & masonry", unit:"kg", factor:0.025, density:1900, source:"Indicative (low-cement)" },
       // Insulation
       { id:"mineral", name:"Mineral wool",                 cat:"Insulation", unit:"kg", factor:1.280, density:30,  source:"ICE v3 (indicative)" },
       { id:"eps",     name:"EPS",                          cat:"Insulation", unit:"kg", factor:3.290, density:20,  source:"ICE v3 (indicative)" },
       { id:"xps",     name:"XPS",                          cat:"Insulation", unit:"kg", factor:3.420, density:35,  source:"ICE v3 (indicative)" },
       { id:"cellulose",name:"Cellulose (recycled)",        cat:"Insulation", unit:"kg", factor:0.420, density:50,  source:"ICE v3 (indicative)" },
+      { id:"pir",     name:"PIR / polyiso board",          cat:"Insulation", unit:"kg", factor:3.500, density:32,  source:"ICE v3 (indicative)" },
+      { id:"woodfibre",name:"Wood fibre board",            cat:"Insulation", unit:"kg", factor:0.500, density:50,  source:"ICE v3 (indicative, excl. biogenic)" },
+      { id:"cork",    name:"Cork board (expanded)",        cat:"Insulation", unit:"kg", factor:0.450, density:110, source:"Indicative (excl. biogenic)" },
+      { id:"sheepwool",name:"Sheep's wool",                cat:"Insulation", unit:"kg", factor:0.900, density:25,  source:"Indicative" },
       // Cladding & finishes
       { id:"gypsum",  name:"Gypsum plasterboard",          cat:"Cladding & finishes", unit:"kg", factor:0.390, density:700,  source:"ICE v3 (indicative)" },
       { id:"render",  name:"Cement render / screed",       cat:"Cladding & finishes", unit:"kg", factor:0.160, density:1800, source:"ICE v3 (indicative)" },
-      { id:"glass",   name:"Float glass",                  cat:"Cladding & finishes", unit:"kg", factor:1.440, density:2500, source:"ICE v3 (indicative)" },
+      { id:"ceramic", name:"Ceramic tile",                 cat:"Cladding & finishes", unit:"kg", factor:0.780, density:2000, source:"ICE v3 (indicative)" },
+      { id:"fibrecement",name:"Fibre cement board",        cat:"Cladding & finishes", unit:"kg", factor:1.050, density:1400, source:"ICE v3 (indicative)" },
+      { id:"terracotta",name:"Terracotta cladding",        cat:"Cladding & finishes", unit:"kg", factor:0.520, density:1900, source:"Indicative" },
+      // Glazing
+      { id:"glass",     name:"Float glass (pane)",         cat:"Glazing", unit:"kg", factor:1.440, density:2500, source:"ICE v3 (indicative)" },
+      { id:"igu_double",name:"Double-glazed unit (IGU)",   cat:"Glazing", unit:"m2", factor:30.0, source:"Indicative (per m²)" },
+      { id:"igu_triple",name:"Triple-glazed unit (IGU)",   cat:"Glazing", unit:"m2", factor:50.0, source:"Indicative (per m²)" },
+      // Doors (per m² of door leaf)
+      { id:"door_timber",name:"Timber door leaf",          cat:"Doors", unit:"m2", factor:30.0, source:"Indicative (per m² of door)" },
+      { id:"door_glazed",name:"Glazed door / screen",      cat:"Doors", unit:"m2", factor:60.0, source:"Indicative (per m² of door)" },
+      { id:"door_steel", name:"Steel door (insulated)",    cat:"Doors", unit:"m2", factor:90.0, source:"Indicative (per m² of door)" },
       // Membranes & misc (per m²)
-      { id:"membrane",name:"Vapour / air membrane",        cat:"Membranes & misc", unit:"m2", factor:0.350, source:"Indicative (per m²)" }
+      { id:"membrane",name:"Vapour / air membrane",        cat:"Membranes & misc", unit:"m2", factor:0.350, source:"Indicative (per m²)" },
+      { id:"epdm",    name:"EPDM membrane",                cat:"Membranes & misc", unit:"m2", factor:2.900, source:"Indicative (per m²)" },
+      { id:"bitumen", name:"Bituminous roofing membrane",  cat:"Membranes & misc", unit:"m2", factor:3.200, source:"Indicative (per m²)" },
+      { id:"paint",   name:"Paint (2 coats)",              cat:"Membranes & misc", unit:"m2", factor:1.200, source:"Indicative (per m²)" }
     ];
 
     const MAT_BY_ID = Object.fromEntries(MATERIALS.map(m => [m.id, m]));
@@ -617,6 +644,8 @@
       "Structure & masonry": "#6aa9e9",
       "Insulation": "#e9c46a",
       "Cladding & finishes": "#e88c7d",
+      "Glazing": "#5fc8c1",
+      "Doors": "#9fcf6a",
       "Membranes & misc": "#b58ce9"
     };
 
