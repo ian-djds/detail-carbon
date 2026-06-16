@@ -132,6 +132,15 @@
     .layer .layer-carbon.copied { color: #fff; }
     .layer .na { color: var(--muted-2); }
 
+    .layer-source {
+      grid-column: 1 / -1;
+      font-size: 0.7rem;
+      color: var(--muted-2);
+      padding: 0.2rem 0.1rem 0;
+      line-height: 1.4;
+    }
+    .layer-source .src-i { opacity: 0.75; margin-right: 0.15rem; }
+
     .remove {
       background: transparent;
       border: none;
@@ -559,10 +568,12 @@
     materials, carbon = thickness × density × factor, per m² of detail. Biogenic
     carbon, transport (A4), construction, in-use and end-of-life stages are not
     included.</p>
-    <p style="margin-top:0.6rem;"><strong>Data.</strong> Factors are representative
-    averages (indicative, ICE v3–style) and are <strong>editable</strong> — override
-    them with product-specific EPDs before relying on results. Not a substitute for
-    a full LCA.</p>
+    <p style="margin-top:0.6rem;"><strong>Data.</strong> Each factor's source is shown
+    under its layer row. Values are representative cradle-to-gate averages in the style
+    of the <strong>ICE database</strong> (Inventory of Carbon &amp; Energy, Circular
+    Ecology) and are indicative only. Every factor is <strong>editable</strong> —
+    override it with a value from a product-specific <strong>EPD</strong> (Environmental
+    Product Declaration) before relying on results. Not a substitute for a full LCA.</p>
   </footer>
 
   <script>
@@ -746,7 +757,14 @@
           recalc(); renderLayers();
         });
 
-        row.append(sel, thick, fac, carbon, rm);
+        // source caption — where this factor comes from
+        const src = document.createElement("div");
+        src.className = "layer-source";
+        const ulabel = mat.unit === "m2" ? "m²" : mat.unit === "m3" ? "m³" : "kg";
+        src.innerHTML = '<span class="src-i">ⓘ</span> factor in kgCO₂e/' + ulabel +
+          ' · source: ' + mat.source;
+
+        row.append(sel, thick, fac, carbon, rm, src);
         container.appendChild(row);
       });
 
