@@ -270,6 +270,45 @@
 
     .empty-note { color: var(--muted-2); font-size: 0.85rem; }
 
+    /* by-category breakdown */
+    .sub-head {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      margin: 1.6rem 0 0.85rem;
+    }
+    .cat-breakdown { display: flex; flex-direction: column; gap: 0.6rem; }
+    .cat-row {
+      display: grid;
+      grid-template-columns: 132px 1fr 96px;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .cat-row .cat-name { font-size: 0.8rem; color: var(--muted); }
+    .cat-bar-track {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      height: 18px;
+      overflow: hidden;
+    }
+    .cat-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.4s ease;
+      min-width: 2px;
+    }
+    .cat-row .cat-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text);
+      white-space: nowrap;
+      text-align: right;
+    }
+    .cat-row .cat-val .cat-pct { color: var(--muted-2); margin-left: 0.45rem; }
+
     .scope-pill {
       display: inline-block;
       font-size: 0.7rem;
@@ -280,6 +319,86 @@
       border-radius: 999px;
       padding: 0.25rem 0.7rem;
     }
+
+    /* compare options */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem;
+    }
+    .opt-slot {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 1rem;
+      min-height: 132px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+    .opt-slot.empty {
+      border-style: dashed;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--muted-2);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    .opt-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.6rem;
+    }
+    .opt-name {
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .opt-total .v {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.55rem;
+      color: var(--accent);
+    }
+    .opt-total .u { font-size: 0.7rem; color: var(--muted); margin-left: 0.3rem; }
+    .opt-bar {
+      display: flex;
+      width: 100%;
+      height: 14px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .opt-bar .seg { height: 100%; min-width: 2px; }
+    .opt-meta { font-size: 0.74rem; color: var(--muted-2); }
+    .opt-actions { display: flex; gap: 0.5rem; margin-top: auto; }
+    .opt-actions button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 0.38rem 0.7rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.76rem;
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease;
+    }
+    .opt-actions button:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+    .delta {
+      margin-top: 1.1rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .delta:empty { display: none; }
+    .delta strong { color: var(--text); font-weight: 600; }
+    .delta .lower { color: var(--accent); }
+    .delta .higher { color: #e88c7d; }
 
     footer {
       width: min(820px, 100%);
@@ -308,6 +427,25 @@
     }
     .toolbar button:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
 
+    .unit-toggle {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .unit-toggle button {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.76rem;
+      padding: 0.4rem 0.65rem;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .unit-toggle button + button { border-left: 1px solid var(--border); }
+    .unit-toggle button.active { background: rgba(255,255,255,0.08); color: var(--text); }
+
     @media (max-width: 620px) {
       .layer, .col-labels {
         grid-template-columns: 1fr 70px 70px;
@@ -318,6 +456,8 @@
       .layer select { grid-column: 1 / -1; }
       .layer .layer-carbon { grid-column: 1 / 3; text-align: left; }
       .layer .remove { grid-column: 3; justify-self: end; }
+      .cat-row { grid-template-columns: 96px 1fr 78px; gap: 0.5rem; }
+      .compare-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -336,13 +476,17 @@
       <div class="card-head">
         <h2>Detail build-up</h2>
         <div class="toolbar">
+          <div class="unit-toggle" id="unit-toggle" title="Thickness units">
+            <button data-unit="mm" class="active">mm</button>
+            <button data-unit="in">in</button>
+          </div>
           <button id="reset-btn">Reset to example</button>
         </div>
       </div>
 
       <div class="col-labels">
         <span>Material</span>
-        <span>Thickness (mm)</span>
+        <span id="thick-label">Thickness (mm)</span>
         <span>Factor</span>
         <span>kgCO₂e/m²</span>
         <span></span>
@@ -355,7 +499,10 @@
       <div class="area-row">
         <span>Total detail area</span>
         <input type="number" id="area" min="0" step="0.1" value="1" />
-        <span>m²</span>
+        <div class="unit-toggle" id="area-unit-toggle" title="Area units">
+          <button data-unit="m2" class="active">m²</button>
+          <button data-unit="ft2">ft²</button>
+        </div>
       </div>
     </section>
 
@@ -379,6 +526,29 @@
 
       <div class="bar" id="bar"></div>
       <div class="legend" id="legend"></div>
+
+      <div class="cat-section" id="cat-section">
+        <h3 class="sub-head">By category</h3>
+        <div class="cat-breakdown" id="cat-breakdown"></div>
+      </div>
+    </section>
+
+    <!-- COMPARE -->
+    <section class="card compare">
+      <div class="card-head">
+        <h2>Compare options</h2>
+        <div class="toolbar">
+          <button id="save-a">Save current as A</button>
+          <button id="save-b">Save current as B</button>
+        </div>
+      </div>
+
+      <div class="compare-grid">
+        <div class="opt-slot empty" id="slot-A"></div>
+        <div class="opt-slot empty" id="slot-B"></div>
+      </div>
+
+      <div class="delta" id="delta"></div>
     </section>
 
   </div>
@@ -431,6 +601,14 @@
 
     const SEG_COLORS = ["#7dd3a0","#6aa9e9","#e9c46a","#e88c7d","#b58ce9","#5fc8c1","#e0a0c8","#9fcf6a"];
 
+    // stable color per material category
+    const CAT_COLORS = {
+      "Structure & masonry": "#6aa9e9",
+      "Insulation": "#e9c46a",
+      "Cladding & finishes": "#e88c7d",
+      "Membranes & misc": "#b58ce9"
+    };
+
     const STORE_KEY = "detail_carbon_state_v1";
 
     const EXAMPLE = {
@@ -443,6 +621,9 @@
     };
 
     let state = loadState();
+    if (!state.options) state.options = { A: null, B: null };
+    if (state.thickUnit !== "in") state.thickUnit = "mm";
+    if (state.areaUnit !== "ft2") state.areaUnit = "m2";
 
     function loadState() {
       try {
@@ -462,6 +643,29 @@
     }
 
     function num(v) { const n = parseFloat(v); return isFinite(n) ? n : 0; }
+
+    // thickness is stored canonically in mm; only display/input converts
+    const MM_PER_IN = 25.4;
+    function thickToDisplay(mm) {
+      const v = num(mm);
+      return state.thickUnit === "in" ? +(v / MM_PER_IN).toFixed(3) : v;
+    }
+    function displayToThick(val) {
+      const v = num(val);
+      return state.thickUnit === "in" ? v * MM_PER_IN : v;
+    }
+
+    // area is stored canonically in m²; only display/input converts
+    const M2_PER_FT2 = 0.09290304;
+    function areaUnitLabel() { return state.areaUnit === "ft2" ? "ft²" : "m²"; }
+    function areaToDisplay(m2) {
+      const v = num(m2);
+      return state.areaUnit === "ft2" ? +(v / M2_PER_FT2).toFixed(2) : +v.toFixed(3);
+    }
+    function displayToArea(val) {
+      const v = num(val);
+      return state.areaUnit === "ft2" ? v * M2_PER_FT2 : v;
+    }
 
     // carbon per m² of detail for a single layer
     function layerCarbon(layer) {
@@ -511,12 +715,13 @@
           recalc(); renderLayers();
         });
 
-        // thickness input
+        // thickness input (stored as mm, shown in the chosen unit)
         const thick = document.createElement("input");
-        thick.type = "number"; thick.min = "0"; thick.step = "1";
-        thick.value = layer.thickness ?? "";
-        if (mat.unit === "m2") { thick.value = ""; thick.placeholder = "n/a"; thick.disabled = true; }
-        thick.addEventListener("input", () => { layer.thickness = thick.value; recalc(); });
+        thick.type = "number"; thick.min = "0";
+        thick.step = state.thickUnit === "in" ? "0.125" : "1";
+        thick.value = mat.unit === "m2" ? "" : thickToDisplay(layer.thickness);
+        if (mat.unit === "m2") { thick.placeholder = "n/a"; thick.disabled = true; }
+        thick.addEventListener("input", () => { layer.thickness = displayToThick(thick.value); recalc(); });
 
         // factor input
         const fac = document.createElement("input");
@@ -553,24 +758,33 @@
       }
     }
 
-    function recalc() {
-      state.area = num(document.getElementById("area").value);
-
-      const contribs = state.layers.map(l => {
+    // per-layer carbon contributions for any set of layers
+    function contribsFor(layers) {
+      return layers.map(l => {
         const c = layerCarbon(l);
         const mat = MAT_BY_ID[l.matId];
         return { name: mat ? mat.name : "?", carbon: (c == null ? 0 : c) };
       });
+    }
 
+    function totalPerM2(layers) {
+      return contribsFor(layers).reduce((s, c) => s + c.carbon, 0);
+    }
+
+    function recalc() {
+      state.area = displayToArea(document.getElementById("area").value);
+
+      const contribs = contribsFor(state.layers);
       const perM2 = contribs.reduce((s, c) => s + c.carbon, 0);
       const abs = perM2 * (state.area || 0);
 
       document.getElementById("total-per-m2").textContent = formatNum(perM2);
       document.getElementById("total-abs").textContent = formatNum(abs);
       document.getElementById("total-abs-label").textContent =
-        "kgCO₂e total (" + (state.area || 0) + " m²)";
+        "kgCO₂e total (" + areaToDisplay(state.area) + " " + areaUnitLabel() + ")";
 
       renderBreakdown(contribs, perM2);
+      renderCategoryBreakdown(perM2);
 
       // refresh per-layer numbers in place
       const rows = document.querySelectorAll("#layers .layer .layer-carbon");
@@ -608,6 +822,166 @@
       });
     }
 
+    function renderCategoryBreakdown(perM2) {
+      const section = document.getElementById("cat-section");
+      const wrap = document.getElementById("cat-breakdown");
+      wrap.innerHTML = "";
+
+      // aggregate carbon by material category
+      const totals = {};
+      state.layers.forEach(l => {
+        const mat = MAT_BY_ID[l.matId];
+        if (!mat) return;
+        const c = layerCarbon(l) || 0;
+        if (c <= 0) return;
+        totals[mat.cat] = (totals[mat.cat] || 0) + c;
+      });
+
+      const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+      if (entries.length === 0 || perM2 <= 0) { section.style.display = "none"; return; }
+      section.style.display = "";
+
+      entries.forEach(([cat, val]) => {
+        const pct = (val / perM2) * 100;          // share of total — width matches the % shown
+        const color = CAT_COLORS[cat] || "#7dd3a0";
+
+        const row = document.createElement("div");
+        row.className = "cat-row";
+
+        const name = document.createElement("span");
+        name.className = "cat-name";
+        name.textContent = cat;
+
+        const track = document.createElement("div");
+        track.className = "cat-bar-track";
+        const fill = document.createElement("div");
+        fill.className = "cat-bar-fill";
+        fill.style.width = pct + "%";
+        fill.style.background = color;
+        track.appendChild(fill);
+
+        const value = document.createElement("span");
+        value.className = "cat-val";
+        value.textContent = val.toFixed(1);
+        const pctEl = document.createElement("span");
+        pctEl.className = "cat-pct";
+        pctEl.textContent = pct.toFixed(0) + "%";
+        value.appendChild(pctEl);
+
+        row.append(name, track, value);
+        wrap.appendChild(row);
+      });
+    }
+
+    /* ---------- Compare options A/B ---------- */
+    function saveOption(key) {
+      state.options[key] = {
+        layers: structuredCloneSafe(state.layers),
+        area: displayToArea(document.getElementById("area").value)
+      };
+      saveState();
+      renderComparison();
+    }
+
+    function loadOption(key) {
+      const opt = state.options[key];
+      if (!opt) return;
+      state.layers = structuredCloneSafe(opt.layers);
+      state.area = opt.area;
+      document.getElementById("area").value = state.area;
+      renderLayers();
+      recalc();
+    }
+
+    function clearOption(key) {
+      state.options[key] = null;
+      saveState();
+      renderComparison();
+    }
+
+    function renderComparison() {
+      ["A", "B"].forEach(key => {
+        const slot = document.getElementById("slot-" + key);
+        const opt = state.options[key];
+        slot.innerHTML = "";
+
+        if (!opt) {
+          slot.className = "opt-slot empty";
+          slot.textContent = "Option " + key + " — not saved yet.";
+          return;
+        }
+        slot.className = "opt-slot";
+
+        const contribs = contribsFor(opt.layers);
+        const perM2 = contribs.reduce((s, c) => s + c.carbon, 0);
+
+        const head = document.createElement("div");
+        head.className = "opt-head";
+        head.innerHTML =
+          '<span class="opt-name">Option ' + key + '</span>' +
+          '<span class="opt-total"><span class="v">' + formatNum(perM2) +
+          '</span><span class="u">kgCO₂e/m²</span></span>';
+
+        const bar = document.createElement("div");
+        bar.className = "opt-bar";
+        contribs.forEach((c, i) => {
+          if (c.carbon <= 0 || perM2 <= 0) return;
+          const seg = document.createElement("div");
+          seg.className = "seg";
+          seg.style.flexBasis = (c.carbon / perM2 * 100) + "%";
+          seg.style.flexGrow = "0";
+          seg.style.background = SEG_COLORS[i % SEG_COLORS.length];
+          seg.title = c.name + " — " + c.carbon.toFixed(1) + " kgCO₂e/m²";
+          bar.appendChild(seg);
+        });
+
+        const meta = document.createElement("div");
+        meta.className = "opt-meta";
+        const n = opt.layers.length;
+        meta.textContent = n + (n === 1 ? " layer" : " layers") + " · " +
+          areaToDisplay(opt.area) + " " + areaUnitLabel() + " · " +
+          formatNum(perM2 * (opt.area || 0)) + " kgCO₂e total";
+
+        const actions = document.createElement("div");
+        actions.className = "opt-actions";
+        const load = document.createElement("button");
+        load.textContent = "Load";
+        load.title = "Load this build-up back into the builder";
+        load.addEventListener("click", () => loadOption(key));
+        const clear = document.createElement("button");
+        clear.textContent = "Clear";
+        clear.addEventListener("click", () => clearOption(key));
+        actions.append(load, clear);
+
+        slot.append(head, bar, meta, actions);
+      });
+
+      renderDelta();
+    }
+
+    function renderDelta() {
+      const el = document.getElementById("delta");
+      const a = state.options.A, b = state.options.B;
+      if (!a || !b) { el.innerHTML = ""; return; }
+
+      const pa = totalPerM2(a.layers), pb = totalPerM2(b.layers);
+      if (pa <= 0) { el.innerHTML = ""; return; }
+
+      const diff = (pb - pa) / pa * 100;
+      const range = '<span style="color:var(--muted-2)">(' + formatNum(pa) +
+        " → " + formatNum(pb) + " kgCO₂e/m²)</span>";
+
+      if (Math.abs(diff) < 0.5) {
+        el.innerHTML = "Option B is about the <strong>same</strong> as Option A " + range + ".";
+        return;
+      }
+      const lower = diff < 0;
+      const cls = lower ? "lower" : "higher";
+      el.innerHTML = 'Option B is <span class="' + cls + '"><strong>' +
+        Math.abs(diff).toFixed(0) + "% " + (lower ? "lower" : "higher") +
+        "</strong></span> than Option A " + range + ".";
+    }
+
     function formatNum(n) {
       if (!isFinite(n)) return "0";
       if (n >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
@@ -635,9 +1009,56 @@
     document.getElementById("area").addEventListener("input", recalc);
 
     document.getElementById("reset-btn").addEventListener("click", () => {
+      const savedOptions = state.options;          // keep saved comparisons + units across a reset
+      const savedThick = state.thickUnit, savedArea = state.areaUnit;
       state = structuredCloneSafe(EXAMPLE);
-      document.getElementById("area").value = state.area;
+      state.options = savedOptions || { A: null, B: null };
+      state.thickUnit = savedThick === "in" ? "in" : "mm";
+      state.areaUnit = savedArea === "ft2" ? "ft2" : "m2";
+      document.getElementById("area").value = areaToDisplay(state.area);
+      applyThickUnit();
+      applyAreaUnit();
       recalc(); renderLayers();
+    });
+
+    // compare options
+    document.getElementById("save-a").addEventListener("click", () => saveOption("A"));
+    document.getElementById("save-b").addEventListener("click", () => saveOption("B"));
+
+    // thickness unit toggle (mm / in)
+    function applyThickUnit() {
+      document.getElementById("thick-label").textContent = "Thickness (" + state.thickUnit + ")";
+      document.querySelectorAll("#unit-toggle button").forEach(b => {
+        b.classList.toggle("active", b.dataset.unit === state.thickUnit);
+      });
+    }
+    document.querySelectorAll("#unit-toggle button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (state.thickUnit === btn.dataset.unit) return;
+        state.thickUnit = btn.dataset.unit;
+        applyThickUnit();
+        renderLayers();      // reformats thickness inputs (carbon unchanged — still mm internally)
+        saveState();
+      });
+    });
+
+    // area unit toggle (m² / ft²)
+    function applyAreaUnit() {
+      document.querySelectorAll("#area-unit-toggle button").forEach(b => {
+        b.classList.toggle("active", b.dataset.unit === state.areaUnit);
+      });
+      document.getElementById("area").step = state.areaUnit === "ft2" ? "1" : "0.1";
+    }
+    document.querySelectorAll("#area-unit-toggle button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (state.areaUnit === btn.dataset.unit) return;
+        state.areaUnit = btn.dataset.unit;
+        document.getElementById("area").value = areaToDisplay(state.area);
+        applyAreaUnit();
+        recalc();            // refreshes the total label (absolute total unchanged — still m² internally)
+        renderComparison();  // refreshes saved options' area unit
+        saveState();
+      });
     });
 
     // copy totals
@@ -649,9 +1070,12 @@
     });
 
     // init
-    document.getElementById("area").value = state.area ?? 1;
+    applyAreaUnit();
+    document.getElementById("area").value = areaToDisplay(state.area ?? 1);
+    applyThickUnit();
     renderLayers();
     recalc();
+    renderComparison();
   </script>
 </body>
 </html>
