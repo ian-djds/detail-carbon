@@ -92,7 +92,7 @@
 
     .layer {
       display: grid;
-      grid-template-columns: 1fr 92px 104px 96px 28px;
+      grid-template-columns: 1fr 84px 84px 104px 92px 28px;
       gap: 0.55rem;
       align-items: center;
       background: var(--surface-2);
@@ -188,7 +188,7 @@
 
     .col-labels {
       display: grid;
-      grid-template-columns: 1fr 92px 104px 96px 28px;
+      grid-template-columns: 1fr 84px 84px 104px 92px 28px;
       gap: 0.55rem;
       padding: 0 0.6rem 0.3rem;
       font-size: 0.68rem;
@@ -198,7 +198,8 @@
     }
     .col-labels span:nth-child(2),
     .col-labels span:nth-child(3),
-    .col-labels span:nth-child(4) { text-align: center; }
+    .col-labels span:nth-child(4),
+    .col-labels span:nth-child(5) { text-align: center; }
 
     .add-btn {
       margin-top: 0.9rem;
@@ -690,6 +691,7 @@
       <div class="col-labels">
         <span>Material</span>
         <span id="thick-label">Thickness (mm)</span>
+        <span>Density (kg/m³)</span>
         <span>Embodied carbon factor (kgCO₂e)</span>
         <span>kgCO₂e/m²</span>
         <span></span>
@@ -1059,8 +1061,9 @@
       if (mat.unit === "m2") return factor;                 // per-m² product
       const t = num(layer.thickness) / 1000;                // mm -> m
       if (mat.unit === "m3") return t * factor;              // volume × factor
-      // unit kg: mass per m² = thickness(m) × density
-      return t * num(mat.density) * factor;
+      // unit kg: mass per m² = thickness(m) × density (per-layer override falls back to the material default)
+      const density = (layer.density != null && layer.density !== "") ? num(layer.density) : num(mat.density);
+      return t * density * factor;
     }
 
     function buildMaterialSelect(selectedId) {
@@ -1095,7 +1098,8 @@
         sel.addEventListener("change", () => {
           layer.matId = sel.value;
           const newMat = MAT_BY_ID[layer.matId];
-          layer.factor = newMat.factor;            // reset factor to material default
+          layer.factor = newMat.factor;            // reset factor + density to material defaults
+          layer.density = newMat.density;
           recalc(); renderLayers();
         });
 
@@ -1106,6 +1110,16 @@
         thick.value = mat.unit === "m2" ? "" : thickToDisplay(layer.thickness);
         if (mat.unit === "m2") { thick.placeholder = "n/a"; thick.disabled = true; }
         thick.addEventListener("input", () => { layer.thickness = displayToThick(thick.value); recalc(); });
+
+        // density input (kg/m³) — editable, only used for per-kg materials
+        const dens = document.createElement("input");
+        dens.type = "number"; dens.min = "0"; dens.step = "1";
+        if (mat.unit === "kg") {
+          dens.value = (layer.density != null && layer.density !== "") ? layer.density : (mat.density ?? "");
+          dens.addEventListener("input", () => { layer.density = dens.value; recalc(); });
+        } else {
+          dens.value = ""; dens.placeholder = "n/a"; dens.disabled = true;
+        }
 
         // factor input — units depend on the material (kgCO₂e per kg / m² / m³)
         const ulabel = mat.unit === "m2" ? "m²" : mat.unit === "m3" ? "m³" : "kg";
@@ -1152,7 +1166,7 @@
         dot.title = catLabel(mat.cat);
         matCell.append(dot, sel);
 
-        row.append(matCell, thick, facCell, carbon, rm, src);
+        row.append(matCell, thick, dens, facCell, carbon, rm, src);
         container.appendChild(row);
       });
 
